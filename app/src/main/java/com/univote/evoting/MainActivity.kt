@@ -8,14 +8,25 @@ import com.univote.evoting.ui.navigation.AppNavHost
 import com.univote.evoting.ui.theme.UniVoteTheme
 
 class MainActivity : ComponentActivity() {
+    private val container by lazy { (application as UniVoteApp).container }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val container = (application as UniVoteApp).container
+
+
         setContent {
             UniVoteTheme {
                 AppNavHost(container = container)
             }
         }
+    }
+    override fun onResume() {
+        super.onResume()
+        container.sessionManager.validate()   // expired session -> signed out
+    }
+
+    override fun onUserInteraction() {
+        super.onUserInteraction()
+        container.sessionManager.touch()      // any tap/swipe counts as activity
     }
 }

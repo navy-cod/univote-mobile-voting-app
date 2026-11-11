@@ -2,8 +2,11 @@ package com.univote.evoting.di
 
 import android.content.Context
 import androidx.room.Room
+import com.univote.evoting.core.session.SessionManager
 import com.univote.evoting.data.local.DatabaseSeeder
 import com.univote.evoting.data.local.UniVoteDatabase
+import com.univote.evoting.data.repository.AuthRepository
+import com.univote.evoting.data.repository.LocalAuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +23,9 @@ class AppContainer(context: Context) {
         UniVoteDatabase::class.java,
         UniVoteDatabase.NAME
     ).build()
+
+    val sessionManager = SessionManager(context.applicationContext)
+    val authRepository: AuthRepository = LocalAuthRepository(database)
 
     private val _isReady = MutableStateFlow(false)
     val isReady: StateFlow<Boolean> = _isReady.asStateFlow()

@@ -11,6 +11,7 @@ import com.univote.evoting.data.local.entity.PositionEntity
 import com.univote.evoting.data.local.entity.UserEntity
 import com.univote.evoting.data.local.entity.VoterEntity
 import kotlinx.coroutines.flow.Flow
+import androidx.room.Update
 
 @Dao
 interface DepartmentDao {
@@ -44,9 +45,11 @@ interface UserDao {
     @Insert
     suspend fun insert(user: UserEntity): Long
 
-    @Query("SELECT * FROM users WHERE username = :username LIMIT 1")
+    @Query("SELECT * FROM users WHERE username = :username COLLATE NOCASE LIMIT 1")
     suspend fun findByUsername(username: String): UserEntity?
 
+    @Update
+    suspend fun update(user: UserEntity)
     @Query("SELECT COUNT(*) FROM users")
     fun observeCount(): Flow<Int>
 }

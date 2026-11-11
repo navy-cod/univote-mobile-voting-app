@@ -2,5 +2,8 @@ package com.univote.evoting.ui.navigation
 
 object Routes {
     const val SPLASH = "splash"
-    const val SETUP_CHECK = "setup_check" // Phase 1 only; replaced by Login in Phase 2
+    const val LOGIN = "login"
+    const val REGISTER = "register"
+    const val RECOVER = "recover"
+    const val HOME = "home"
 }
