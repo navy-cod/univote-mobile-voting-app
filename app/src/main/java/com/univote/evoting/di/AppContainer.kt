@@ -3,10 +3,15 @@ package com.univote.evoting.di
 import android.content.Context
 import androidx.room.Room
 import com.univote.evoting.core.session.SessionManager
+import com.univote.evoting.data.audit.AuditLogger
 import com.univote.evoting.data.local.DatabaseSeeder
 import com.univote.evoting.data.local.UniVoteDatabase
 import com.univote.evoting.data.repository.AuthRepository
+import com.univote.evoting.data.repository.DepartmentRepository
+import com.univote.evoting.data.repository.ElectionRepository
 import com.univote.evoting.data.repository.LocalAuthRepository
+import com.univote.evoting.data.repository.PartyRepository
+import com.univote.evoting.data.repository.VoterRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +32,12 @@ class AppContainer(context: Context) {
     val sessionManager = SessionManager(context.applicationContext)
     val authRepository: AuthRepository = LocalAuthRepository(database)
 
+    val auditLogger = AuditLogger(database)
+    private val currentActor: () -> String = { sessionManager.currentUser.value?.username ?: "system" }
+    val departmentRepository = DepartmentRepository(database, auditLogger, currentActor)
+    val voterRepository = VoterRepository(database, auditLogger, currentActor)
+    val partyRepository = PartyRepository(database, auditLogger, currentActor)
+    val electionRepository = ElectionRepository(database, auditLogger, currentActor)
     private val _isReady = MutableStateFlow(false)
     val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
 

@@ -6,4 +6,12 @@ object Routes {
     const val REGISTER = "register"
     const val RECOVER = "recover"
     const val HOME = "home"
+
+    const val ADMIN_DEPARTMENTS = "admin/departments"
+    const val ADMIN_VOTERS = "admin/voters"
+    const val ADMIN_PARTIES = "admin/parties"
+    const val ADMIN_ELECTIONS = "admin/elections"
+    const val ELECTION_DETAIL = "admin/election/{electionId}"
+
+    fun electionDetail(id: Long) = "admin/election/$id"
 }
