@@ -9,6 +9,7 @@ import com.univote.evoting.data.local.dao.PartyDao
 import com.univote.evoting.data.local.dao.PositionDao
 import com.univote.evoting.data.local.dao.UserDao
 import com.univote.evoting.data.local.dao.VoterDao
+import com.univote.evoting.data.local.dao.SupportTicketDao
 import com.univote.evoting.data.local.entity.AuditLogEntity
 import com.univote.evoting.data.local.entity.BallotEntity
 import com.univote.evoting.data.local.entity.CandidateEntity
@@ -52,6 +53,7 @@ abstract class UniVoteDatabase : RoomDatabase() {
     abstract fun electionDao(): ElectionDao
     abstract fun positionDao(): PositionDao
     abstract fun candidateDao(): CandidateDao
+    abstract fun supportTicketDao(): SupportTicketDao
 
     companion object {
         const val NAME = "univote.db"

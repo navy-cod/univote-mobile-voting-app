@@ -7,6 +7,7 @@ import com.univote.evoting.data.local.DatabaseSeeder
 import com.univote.evoting.data.local.UniVoteDatabase
 import com.univote.evoting.data.repository.AuthRepository
 import com.univote.evoting.data.repository.LocalAuthRepository
+import com.univote.evoting.data.repository.SupportTicketRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,6 +27,7 @@ class AppContainer(context: Context) {
 
     val sessionManager = SessionManager(context.applicationContext)
     val authRepository: AuthRepository = LocalAuthRepository(database)
+    val supportTicketRepository = SupportTicketRepository(database.supportTicketDao())
 
     private val _isReady = MutableStateFlow(false)
     val isReady: StateFlow<Boolean> = _isReady.asStateFlow()

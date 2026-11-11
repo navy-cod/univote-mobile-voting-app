@@ -325,3 +325,11 @@ This release is a **local-only** version of a system the SRS describes as client
 - **Author:** [Your name]
 - **Course / project:** [Course name], Software Engineering Project
 - **Licence:** [Add a licence, for example MIT, or write "Coursework - all rights reserved"]
+
+## Support and fraud reporting (Option 10)
+
+The support reporting screen is available from the signed-in home screen. Voters can submit a technical-support or fraud/suspicious-activity report and receive a unique `UV-XXXXXXXX` reference number. Reports are stored locally in the Room database and can be followed from the same signed-in account.
+
+Accounts with the `SUPPORT_OFFICER`, `SYSTEM_ADMIN`, or `ELECTION_ADMIN` role see the reports inbox and can move an open report to **In Review** or **Resolved**. A resolution note is stored with resolved reports.
+
+> This project currently uses local Room storage. Reports are therefore stored on the device/database instance and are not yet synchronized between devices or sent to a central support server. A production deployment should connect this repository to an authenticated backend API and enforce support-role permissions on the server as well.
