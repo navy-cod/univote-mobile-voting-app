@@ -6,12 +6,26 @@ object Routes {
     const val REGISTER = "register"
     const val RECOVER = "recover"
     const val HOME = "home"
-
     const val ADMIN_DEPARTMENTS = "admin/departments"
     const val ADMIN_VOTERS = "admin/voters"
     const val ADMIN_PARTIES = "admin/parties"
     const val ADMIN_ELECTIONS = "admin/elections"
     const val ELECTION_DETAIL = "admin/election/{electionId}"
+    const val BALLOT = "voter/ballot/{electionId}"
+    const val NOTIFICATIONS = "notifications"
+    const val INSIGHTS = "admin/insights"
+    const val STATS = "stats/{electionId}"
+    const val RESULTS = "results/{electionId}"
+    const val AUDIT = "records/audit"
+    const val SUPPORT_MINE = "support/mine"
+    const val SUPPORT_NEW = "support/new"
+    const val SUPPORT_QUEUE = "support/queue"
+    const val SUPPORT_TICKET = "support/ticket/{ticketId}"
+
+    fun ballot(id: Long) = "voter/ballot/$id"
+    fun stats(id: Long) = "stats/$id"
+    fun results(id: Long) = "results/$id"
+    fun supportTicket(id: Long) = "support/ticket/$id"
 
     fun electionDetail(id: Long) = "admin/election/$id"
 }
