@@ -8,7 +8,10 @@ import com.univote.evoting.data.local.entity.UserEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class LocalAuthRepository(db: UniVoteDatabase) : AuthRepository {
+class LocalAuthRepository(
+    db: UniVoteDatabase,
+    private val notifications: NotificationPublisher = NotificationPublisher.None
+) : AuthRepository {
 
     private val userDao = db.userDao()
     private val voterDao = db.voterDao()
@@ -53,7 +56,7 @@ class LocalAuthRepository(db: UniVoteDatabase) : AuthRepository {
         PasswordPolicy.validate(password)?.let { return@withContext AccountResult.Failure(it) }
 
         val hashed = PasswordHasher.hash(password)
-        userDao.insert(
+        val newUserId = userDao.insert(
             UserEntity(
                 username = reg,
                 displayName = voter.fullName,
@@ -63,6 +66,7 @@ class LocalAuthRepository(db: UniVoteDatabase) : AuthRepository {
                 voterRegNumber = reg
             )
         )
+        notifications.accountCreated(newUserId)
         AccountResult.Success
     }
 
@@ -94,6 +98,7 @@ class LocalAuthRepository(db: UniVoteDatabase) : AuthRepository {
         userDao.update(
             user.copy(passwordHash = hashed.hash, salt = hashed.salt, failedAttempts = 0, lockedUntil = 0L)
         )
+        notifications.passwordChanged(user.id)
         AccountResult.Success
     }
 
@@ -102,6 +107,8 @@ class LocalAuthRepository(db: UniVoteDatabase) : AuthRepository {
         val attempts = user.failedAttempts + 1
         return if (attempts >= MAX_FAILED_ATTEMPTS) {
             userDao.update(user.copy(failedAttempts = 0, lockedUntil = now + LOCK_DURATION_MS))
+            // Alert once, at the moment the lock starts (not on every attempt made while locked).
+            notifications.accountLocked(user.id, LOCK_DURATION_MS / 60_000)
             LoginResult.Locked(LOCK_DURATION_MS / 60_000)
         } else {
             userDao.update(user.copy(failedAttempts = attempts))
@@ -120,4 +127,4 @@ class LocalAuthRepository(db: UniVoteDatabase) : AuthRepository {
         const val ROLL_MISMATCH = "Those details do not match the approved student roll."
         const val RECOVERY_FAILED = "We could not verify those details."
     }
-}
+}

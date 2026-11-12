@@ -6,4 +6,5 @@ object Routes {
     const val REGISTER = "register"
     const val RECOVER = "recover"
     const val HOME = "home"
-}
+    const val NOTIFICATIONS = "notifications"
+}

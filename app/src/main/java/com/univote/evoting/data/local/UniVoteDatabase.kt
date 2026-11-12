@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import com.univote.evoting.data.local.dao.CandidateDao
 import com.univote.evoting.data.local.dao.DepartmentDao
 import com.univote.evoting.data.local.dao.ElectionDao
+import com.univote.evoting.data.local.dao.NotificationDao
 import com.univote.evoting.data.local.dao.PartyDao
 import com.univote.evoting.data.local.dao.PositionDao
 import com.univote.evoting.data.local.dao.UserDao
@@ -52,6 +53,7 @@ abstract class UniVoteDatabase : RoomDatabase() {
     abstract fun electionDao(): ElectionDao
     abstract fun positionDao(): PositionDao
     abstract fun candidateDao(): CandidateDao
+    abstract fun notificationDao(): NotificationDao
 
     companion object {
         const val NAME = "univote.db"

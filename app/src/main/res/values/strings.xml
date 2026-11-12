@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">UniVote</string>
+
+    <string name="channel_confirmations_name">Confirmations</string>
+    <string name="channel_confirmations_desc">Vote receipts and account confirmations</string>
+    <string name="channel_errors_name">Errors and security alerts</string>
+    <string name="channel_errors_desc">Failed actions, account lockouts and security alerts</string>
+    <string name="channel_results_name">Election results</string>
+    <string name="channel_results_desc">Announcements when election results are published</string>
+    <string name="channel_general_name">General</string>
+    <string name="channel_general_desc">Election schedules, support updates and other notices</string>
+    <string name="notification_private_text">You have a new UniVote notification</string>
 </resources>
