@@ -34,6 +34,8 @@ import com.univote.evoting.ui.auth.RegisterScreen
 import com.univote.evoting.ui.auth.RegisterViewModel
 import com.univote.evoting.ui.home.HomePlaceholderScreen
 import com.univote.evoting.ui.screens.SplashScreen
+import com.univote.evoting.ui.support.SupportScreen
+import com.univote.evoting.ui.support.SupportViewModel
 
 @Composable
 fun AppNavHost(
@@ -176,8 +178,20 @@ fun AppNavHost(
             sessionUser?.let { user ->
                 HomePlaceholderScreen(
                     user = user,
-                    onSignOut = { container.sessionManager.end() }
+                    onSignOut = { container.sessionManager.end() },
+                    onSupport = { navController.navigate(Routes.SUPPORT) }
                 )
+            }
+        }
+
+        composable(Routes.SUPPORT) {
+            sessionUser?.let { user ->
+                val vm: SupportViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer { SupportViewModel(container.supportTicketRepository, user) }
+                    }
+                )
+                SupportScreen(viewModel = vm, onBack = { navController.popBackStack() })
             }
         }
     }

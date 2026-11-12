@@ -12,6 +12,7 @@ import com.univote.evoting.data.repository.ElectionRepository
 import com.univote.evoting.data.repository.LocalAuthRepository
 import com.univote.evoting.data.repository.PartyRepository
 import com.univote.evoting.data.repository.VoterRepository
+import com.univote.evoting.data.repository.SupportTicketRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,6 +32,7 @@ class AppContainer(context: Context) {
 
     val sessionManager = SessionManager(context.applicationContext)
     val authRepository: AuthRepository = LocalAuthRepository(database)
+    val supportTicketRepository = SupportTicketRepository(database.supportTicketDao())
 
     val auditLogger = AuditLogger(database)
     private val currentActor: () -> String = { sessionManager.currentUser.value?.username ?: "system" }

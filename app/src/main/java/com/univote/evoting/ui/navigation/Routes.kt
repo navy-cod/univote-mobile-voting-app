@@ -14,4 +14,5 @@ object Routes {
     const val ELECTION_DETAIL = "admin/election/{electionId}"
 
     fun electionDetail(id: Long) = "admin/election/$id"
+    const val SUPPORT = "support"
 }
