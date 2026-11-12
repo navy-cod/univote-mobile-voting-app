@@ -19,6 +19,7 @@ import com.univote.evoting.data.repository.ResultsRepository
 import com.univote.evoting.data.repository.StatisticsRepository
 import com.univote.evoting.data.repository.AuditRepository
 import com.univote.evoting.data.repository.SupportRepository
+import com.univote.evoting.data.repository.SupportTicketRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,6 +38,9 @@ class AppContainer(context: Context) {
     ).build()
 
     val sessionManager = SessionManager(context.applicationContext)
+    val authRepository: AuthRepository = LocalAuthRepository(database)
+    val supportTicketRepository = SupportTicketRepository(database.supportTicketDao())
+
     val auditLogger = AuditLogger(database)
     val authRepository: AuthRepository = LocalAuthRepository(database, auditLogger)
     val supportRepository = SupportRepository(database, auditLogger) { sessionManager.currentUser.value }

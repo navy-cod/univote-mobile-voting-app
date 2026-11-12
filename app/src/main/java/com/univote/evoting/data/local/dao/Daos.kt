@@ -309,3 +309,26 @@ interface SupportTicketDao {
     @Query(TICKET_SELECT + " WHERE t.id = :id")
     fun observeRow(id: Long): Flow<TicketRow?>
 }
+
+@Dao
+interface SupportTicketDao {
+    @Insert
+    suspend fun insert(ticket: com.univote.evoting.data.local.entity.SupportTicketEntity): Long
+
+    @Query("SELECT * FROM support_tickets WHERE reporterUserId = :userId ORDER BY createdAt DESC")
+    fun observeForReporter(userId: Long): Flow<List<com.univote.evoting.data.local.entity.SupportTicketEntity>>
+
+    @Query("SELECT * FROM support_tickets ORDER BY createdAt DESC")
+    fun observeAll(): Flow<List<com.univote.evoting.data.local.entity.SupportTicketEntity>>
+
+    @Query("SELECT * FROM support_tickets WHERE referenceNo = :referenceNo LIMIT 1")
+    suspend fun findByReference(referenceNo: String): com.univote.evoting.data.local.entity.SupportTicketEntity?
+
+    @Query("UPDATE support_tickets SET status = :status, resolutionNote = :resolutionNote, updatedAt = :updatedAt WHERE id = :ticketId")
+    suspend fun updateStatus(
+        ticketId: Long,
+        status: com.univote.evoting.data.local.entity.TicketStatus,
+        resolutionNote: String?,
+        updatedAt: Long
+    ): Int
+}

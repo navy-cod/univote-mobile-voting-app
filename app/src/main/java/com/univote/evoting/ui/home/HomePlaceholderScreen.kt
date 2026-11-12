@@ -3,6 +3,7 @@ package com.univote.evoting.ui.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -18,7 +19,7 @@ import com.univote.evoting.data.repository.SessionUser
 /** Temporary role-specific landing page. Later phases replace it with the real dashboards. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePlaceholderScreen(user: SessionUser, onSignOut: () -> Unit) {
+fun HomePlaceholderScreen(user: SessionUser, onSignOut: () -> Unit, onSupport: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -39,6 +40,9 @@ fun HomePlaceholderScreen(user: SessionUser, onSignOut: () -> Unit) {
             )
             Text("Coming in later phases:", style = MaterialTheme.typography.titleSmall)
             user.role.upcomingFeatures().forEach { Text("\u2022 $it") }
+            androidx.compose.material3.Button(onClick = onSupport, modifier = Modifier.fillMaxWidth()) {
+                Text(if (user.role == Role.SUPPORT_OFFICER || user.role == Role.SYSTEM_ADMIN || user.role == Role.ELECTION_ADMIN) "Review support reports" else "Support & fraud reporting")
+            }
         }
     }
 }
