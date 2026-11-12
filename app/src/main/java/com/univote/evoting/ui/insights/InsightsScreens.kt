@@ -66,6 +66,8 @@ fun ObserverHomeScreen(
     viewModel: InsightsViewModel,
     onStats: (Long) -> Unit,
     onResults: (Long) -> Unit,
+    onAudit: () -> Unit,
+    onSupport: () -> Unit,
     onAlerts: () -> Unit,
     onSignOut: () -> Unit
 ) {
@@ -88,7 +90,17 @@ fun ObserverHomeScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item { Text("Welcome, ${user.displayName}", style = MaterialTheme.typography.headlineSmall) }
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Welcome, ${user.displayName}", style = MaterialTheme.typography.headlineSmall)
+                    OutlinedButton(onClick = onAudit, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text("Audit records")
+                    }
+                    OutlinedButton(onClick = onSupport, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text("Report a problem")
+                    }
+                }
+            }
             if (elections.isEmpty()) item { Text("No published elections yet.") }
             items(elections, key = { it.id }) { e ->
                 InsightCard(e, isAdmin = false, onStats = { onStats(e.id) }, onResults = { onResults(e.id) })

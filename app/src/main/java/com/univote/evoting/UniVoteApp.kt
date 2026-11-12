@@ -18,5 +18,6 @@ class UniVoteApp : Application() {
         super.onCreate()
         container = AppContainer(this)
         appScope.launch { container.initialize() }
+        appScope.launch { container.notificationCenter.run() }
     }
 }

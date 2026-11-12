@@ -34,6 +34,7 @@ import com.univote.evoting.ui.auth.RecoverPasswordScreen
 import com.univote.evoting.ui.auth.RecoverPasswordViewModel
 import com.univote.evoting.ui.auth.RegisterScreen
 import com.univote.evoting.ui.auth.RegisterViewModel
+import com.univote.evoting.ui.home.HomePlaceholderScreen
 import com.univote.evoting.ui.insights.AdminInsightsScreen
 import com.univote.evoting.ui.insights.InsightsViewModel
 import com.univote.evoting.ui.insights.ObserverHomeScreen
@@ -44,6 +45,15 @@ import com.univote.evoting.ui.results.ResultsViewModel
 import com.univote.evoting.ui.screens.SplashScreen
 import com.univote.evoting.ui.stats.StatisticsScreen
 import com.univote.evoting.ui.stats.StatisticsViewModel
+import com.univote.evoting.ui.stats.StatisticsScreen
+import com.univote.evoting.ui.stats.StatisticsViewModel
+import com.univote.evoting.ui.screens.SplashScreen
+import com.univote.evoting.ui.voter.BallotScreen
+import com.univote.evoting.ui.voter.BallotViewModel
+import com.univote.evoting.ui.voter.VoterHomeScreen
+import com.univote.evoting.ui.voter.VoterHomeViewModel
+import com.univote.evoting.ui.audit.AuditLogScreen
+import com.univote.evoting.ui.audit.AuditLogViewModel
 import com.univote.evoting.ui.support.NewReportScreen
 import com.univote.evoting.ui.support.NewReportViewModel
 import com.univote.evoting.ui.support.StaffHomeScreen
@@ -58,6 +68,8 @@ import com.univote.evoting.ui.voter.BallotScreen
 import com.univote.evoting.ui.voter.BallotViewModel
 import com.univote.evoting.ui.voter.VoterHomeScreen
 import com.univote.evoting.ui.voter.VoterHomeViewModel
+import com.univote.evoting.ui.support.SupportScreen
+import com.univote.evoting.ui.support.SupportViewModel
 
 @Composable
 fun AppNavHost(
@@ -80,6 +92,7 @@ fun AppNavHost(
         }
     }
 
+    LaunchedEffect(sessionUser != null) { if (sessionUser != null) onSignedIn() }
     val isAdmin = sessionUser?.role == Role.ELECTION_ADMIN
     val allowed: (Set<Role>) -> Boolean = { roles -> sessionUser?.role?.let { it in roles } == true }
     val auditRoles = setOf(Role.OBSERVER, Role.ELECTION_ADMIN, Role.SYSTEM_ADMIN)
@@ -307,6 +320,60 @@ fun AppNavHost(
             }
         }
 
+        composable(Routes.HOME) {
+            sessionUser?.let { user ->
+                HomePlaceholderScreen(
+                    user = user,
+                    onSignOut = { container.sessionManager.end() },
+                    onSupport = { navController.navigate(Routes.SUPPORT) }
+                )
+            }
+        }
+
+        composable(
+            route = Routes.BALLOT,
+            arguments = listOf(navArgument("electionId") { type = NavType.LongType })
+        ) { entry ->
+            val electionId = entry.arguments?.getLong("electionId") ?: return@composable
+            if (sessionUser?.role == Role.VOTER) {
+                val vm: BallotViewModel = viewModel(
+                    factory = viewModelFactory { initializer { BallotViewModel(electionId, container.votingRepository) } }
+                )
+                BallotScreen(vm, onBack = { navController.popBackStack() })
+            }
+        }
+
+        composable(Routes.INSIGHTS) {
+            if (isAdmin) {
+                val vm: InsightsViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer { InsightsViewModel(container.electionRepository, container.notificationRepository) }
+                    }
+                )
+                AdminInsightsScreen(
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() },
+                    onStats = { id -> navController.navigate(Routes.stats(id)) },
+                    onResults = { id -> navController.navigate(Routes.results(id)) }
+                )
+            }
+        }
+
+        composable(
+            route = Routes.STATS,
+            arguments = listOf(navArgument("electionId") { type = NavType.LongType })
+        ) { entry ->
+            val electionId = entry.arguments?.getLong("electionId") ?: return@composable
+            if (sessionUser != null) {
+                val vm: StatisticsViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer { StatisticsViewModel(electionId, container.statisticsRepository) }
+                    }
+                )
+                StatisticsScreen(vm, onBack = { navController.popBackStack() })
+            }
+        }
+
         composable(
             route = Routes.RESULTS,
             arguments = listOf(navArgument("electionId") { type = NavType.LongType })
@@ -389,6 +456,20 @@ fun AppNavHost(
                     }
                 )
                 TicketDetailScreen(vm, onBack = { navController.popBackStack() })
+                    factory = viewModelFactory { initializer { TicketDetailViewModel(ticketId, container.supportRepository) } }
+                )
+                TicketDetailScreen(vm, onBack = { navController.popBackStack() })
+            }
+        }
+
+        composable(Routes.SUPPORT) {
+            sessionUser?.let { user ->
+                val vm: SupportViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer { SupportViewModel(container.supportTicketRepository, user) }
+                    }
+                )
+                SupportScreen(viewModel = vm, onBack = { navController.popBackStack() })
             }
         }
     }

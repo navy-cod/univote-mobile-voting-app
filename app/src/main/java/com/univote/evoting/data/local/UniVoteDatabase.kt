@@ -8,8 +8,11 @@ import com.univote.evoting.data.local.dao.DepartmentDao
 import com.univote.evoting.data.local.dao.ElectionDao
 import com.univote.evoting.data.local.dao.PartyDao
 import com.univote.evoting.data.local.dao.PositionDao
+import com.univote.evoting.data.local.dao.ResultDao
+import com.univote.evoting.data.local.dao.SupportTicketDao
 import com.univote.evoting.data.local.dao.UserDao
 import com.univote.evoting.data.local.dao.VoterDao
+import com.univote.evoting.data.local.dao.SupportTicketDao
 import com.univote.evoting.data.local.entity.AuditLogEntity
 import com.univote.evoting.data.local.entity.BallotEntity
 import com.univote.evoting.data.local.entity.CandidateEntity
@@ -24,6 +27,9 @@ import com.univote.evoting.data.local.entity.ResultEntity
 import com.univote.evoting.data.local.entity.SupportTicketEntity
 import com.univote.evoting.data.local.entity.UserEntity
 import com.univote.evoting.data.local.entity.VoterEntity
+import com.univote.evoting.data.local.dao.BallotDao
+import com.univote.evoting.data.local.dao.NotificationDao
+import com.univote.evoting.data.local.dao.ParticipationDao
 
 @Database(
     entities = [
@@ -54,6 +60,11 @@ abstract class UniVoteDatabase : RoomDatabase() {
     abstract fun positionDao(): PositionDao
     abstract fun candidateDao(): CandidateDao
     abstract fun auditLogDao(): AuditLogDao
+    abstract fun ballotDao(): BallotDao
+    abstract fun participationDao(): ParticipationDao
+    abstract fun notificationDao(): NotificationDao
+    abstract fun resultDao(): ResultDao
+    abstract fun supportTicketDao(): SupportTicketDao
 
     companion object {
         const val NAME = "univote.db"

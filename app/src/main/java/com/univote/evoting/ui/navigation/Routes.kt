@@ -21,11 +21,10 @@ object Routes {
     const val SUPPORT_NEW = "support/new"
     const val SUPPORT_QUEUE = "support/queue"
     const val SUPPORT_TICKET = "support/ticket/{ticketId}"
-
-    fun ballot(id: Long) = "voter/ballot/$id"
+    fun supportTicket(id: Long) = "support/ticket/$id"
     fun stats(id: Long) = "stats/$id"
     fun results(id: Long) = "results/$id"
-    fun supportTicket(id: Long) = "support/ticket/$id"
-
+    fun ballot(id: Long) = "voter/ballot/$id"
     fun electionDetail(id: Long) = "admin/election/$id"
+    const val SUPPORT = "support"
 }
