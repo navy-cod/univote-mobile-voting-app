@@ -45,15 +45,10 @@ import com.univote.evoting.ui.results.ResultsViewModel
 import com.univote.evoting.ui.screens.SplashScreen
 import com.univote.evoting.ui.stats.StatisticsScreen
 import com.univote.evoting.ui.stats.StatisticsViewModel
-import com.univote.evoting.ui.stats.StatisticsScreen
-import com.univote.evoting.ui.stats.StatisticsViewModel
-import com.univote.evoting.ui.screens.SplashScreen
 import com.univote.evoting.ui.voter.BallotScreen
 import com.univote.evoting.ui.voter.BallotViewModel
 import com.univote.evoting.ui.voter.VoterHomeScreen
 import com.univote.evoting.ui.voter.VoterHomeViewModel
-import com.univote.evoting.ui.audit.AuditLogScreen
-import com.univote.evoting.ui.audit.AuditLogViewModel
 import com.univote.evoting.ui.support.NewReportScreen
 import com.univote.evoting.ui.support.NewReportViewModel
 import com.univote.evoting.ui.support.StaffHomeScreen
@@ -64,10 +59,6 @@ import com.univote.evoting.ui.support.SupportQueueViewModel
 import com.univote.evoting.ui.support.TicketDetailScreen
 import com.univote.evoting.ui.support.TicketDetailViewModel
 import com.univote.evoting.ui.support.UnreadViewModel
-import com.univote.evoting.ui.voter.BallotScreen
-import com.univote.evoting.ui.voter.BallotViewModel
-import com.univote.evoting.ui.voter.VoterHomeScreen
-import com.univote.evoting.ui.voter.VoterHomeViewModel
 import com.univote.evoting.ui.support.SupportScreen
 import com.univote.evoting.ui.support.SupportViewModel
 
