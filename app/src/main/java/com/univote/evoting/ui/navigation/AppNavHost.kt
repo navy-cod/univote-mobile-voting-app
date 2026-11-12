@@ -8,10 +8,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.univote.evoting.data.local.entity.Role
 import com.univote.evoting.di.AppContainer
@@ -26,6 +26,8 @@ import com.univote.evoting.ui.admin.PartiesScreen
 import com.univote.evoting.ui.admin.PartiesViewModel
 import com.univote.evoting.ui.admin.VotersScreen
 import com.univote.evoting.ui.admin.VotersViewModel
+import com.univote.evoting.ui.audit.AuditLogScreen
+import com.univote.evoting.ui.audit.AuditLogViewModel
 import com.univote.evoting.ui.auth.LoginScreen
 import com.univote.evoting.ui.auth.LoginViewModel
 import com.univote.evoting.ui.auth.RecoverPasswordScreen
@@ -40,6 +42,9 @@ import com.univote.evoting.ui.notifications.NotificationsScreen
 import com.univote.evoting.ui.notifications.NotificationsViewModel
 import com.univote.evoting.ui.results.ResultsScreen
 import com.univote.evoting.ui.results.ResultsViewModel
+import com.univote.evoting.ui.screens.SplashScreen
+import com.univote.evoting.ui.stats.StatisticsScreen
+import com.univote.evoting.ui.stats.StatisticsViewModel
 import com.univote.evoting.ui.stats.StatisticsScreen
 import com.univote.evoting.ui.stats.StatisticsViewModel
 import com.univote.evoting.ui.screens.SplashScreen
@@ -59,6 +64,10 @@ import com.univote.evoting.ui.support.SupportQueueViewModel
 import com.univote.evoting.ui.support.TicketDetailScreen
 import com.univote.evoting.ui.support.TicketDetailViewModel
 import com.univote.evoting.ui.support.UnreadViewModel
+import com.univote.evoting.ui.voter.BallotScreen
+import com.univote.evoting.ui.voter.BallotViewModel
+import com.univote.evoting.ui.voter.VoterHomeScreen
+import com.univote.evoting.ui.voter.VoterHomeViewModel
 import com.univote.evoting.ui.support.SupportScreen
 import com.univote.evoting.ui.support.SupportViewModel
 
@@ -70,6 +79,19 @@ fun AppNavHost(
 ) {
     val sessionUser by container.sessionManager.currentUser.collectAsStateWithLifecycle()
 
+    // Ask for the notification permission once a user has signed in.
+    LaunchedEffect(sessionUser != null) { if (sessionUser != null) onSignedIn() }
+
+    // Sign-out or an expired session sends the user back to Login from any screen.
+    LaunchedEffect(sessionUser) {
+        val route = navController.currentDestination?.route
+        val isPublic = route == null ||
+                route in setOf(Routes.SPLASH, Routes.LOGIN, Routes.REGISTER, Routes.RECOVER)
+        if (sessionUser == null && !isPublic) {
+            navController.navigate(Routes.LOGIN) { popUpTo(navController.graph.id) { inclusive = true } }
+        }
+    }
+
     LaunchedEffect(sessionUser != null) { if (sessionUser != null) onSignedIn() }
     val isAdmin = sessionUser?.role == Role.ELECTION_ADMIN
     val allowed: (Set<Role>) -> Boolean = { roles -> sessionUser?.role?.let { it in roles } == true }
@@ -77,6 +99,47 @@ fun AppNavHost(
     val manageRoles = setOf(Role.SUPPORT_OFFICER, Role.ELECTION_ADMIN, Role.SYSTEM_ADMIN)
 
     NavHost(navController = navController, startDestination = Routes.SPLASH) {
+
+        composable(Routes.SPLASH) {
+            SplashScreen(
+                container = container,
+                onReady = {
+                    val destination =
+                        if (container.sessionManager.currentUser.value != null) Routes.HOME else Routes.LOGIN
+                    navController.navigate(destination) { popUpTo(Routes.SPLASH) { inclusive = true } }
+                }
+            )
+        }
+
+        composable(Routes.LOGIN) {
+            val vm: LoginViewModel = viewModel(
+                factory = viewModelFactory {
+                    initializer { LoginViewModel(container.authRepository, container.sessionManager) }
+                }
+            )
+            LoginScreen(
+                viewModel = vm,
+                onLoggedIn = {
+                    navController.navigate(Routes.HOME) { popUpTo(Routes.LOGIN) { inclusive = true } }
+                },
+                onRegister = { navController.navigate(Routes.REGISTER) },
+                onForgotPassword = { navController.navigate(Routes.RECOVER) }
+            )
+        }
+
+        composable(Routes.REGISTER) {
+            val vm: RegisterViewModel = viewModel(
+                factory = viewModelFactory { initializer { RegisterViewModel(container.authRepository) } }
+            )
+            RegisterScreen(viewModel = vm, onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.RECOVER) {
+            val vm: RecoverPasswordViewModel = viewModel(
+                factory = viewModelFactory { initializer { RecoverPasswordViewModel(container.authRepository) } }
+            )
+            RecoverPasswordScreen(viewModel = vm, onBack = { navController.popBackStack() })
+        }
 
         composable(Routes.HOME) {
             sessionUser?.let { user ->
@@ -145,6 +208,8 @@ fun AppNavHost(
             }
         }
 
+        // ---- Election administrator ----
+
         composable(Routes.ADMIN_DEPARTMENTS) {
             if (isAdmin) {
                 val vm: DepartmentsViewModel = viewModel(
@@ -209,40 +274,50 @@ fun AppNavHost(
             }
         }
 
-        composable(Routes.LOGIN) {
-            val vm: LoginViewModel = viewModel(
-                factory = viewModelFactory {
-                    initializer { LoginViewModel(container.authRepository, container.sessionManager) }
-                }
-            )
-            LoginScreen(
-                viewModel = vm,
-                onLoggedIn = {
-                    navController.navigate(Routes.HOME) { popUpTo(Routes.LOGIN) { inclusive = true } }
-                },
-                onRegister = { navController.navigate(Routes.REGISTER) },
-                onForgotPassword = { navController.navigate(Routes.RECOVER) }
-            )
+        composable(Routes.INSIGHTS) {
+            if (isAdmin) {
+                val vm: InsightsViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer { InsightsViewModel(container.electionRepository, container.notificationRepository) }
+                    }
+                )
+                AdminInsightsScreen(
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() },
+                    onStats = { id -> navController.navigate(Routes.stats(id)) },
+                    onResults = { id -> navController.navigate(Routes.results(id)) }
+                )
+            }
         }
 
-        composable(Routes.REGISTER) {
-            val vm: RegisterViewModel = viewModel(
-                factory = viewModelFactory { initializer { RegisterViewModel(container.authRepository) } }
-            )
-            RegisterScreen(
-                viewModel = vm,
-                onBack = { navController.popBackStack() }
-            )
+        // ---- Voting, statistics, results, alerts ----
+
+        composable(
+            route = Routes.BALLOT,
+            arguments = listOf(navArgument("electionId") { type = NavType.LongType })
+        ) { entry ->
+            val electionId = entry.arguments?.getLong("electionId") ?: return@composable
+            if (sessionUser?.role == Role.VOTER) {
+                val vm: BallotViewModel = viewModel(
+                    factory = viewModelFactory { initializer { BallotViewModel(electionId, container.votingRepository) } }
+                )
+                BallotScreen(vm, onBack = { navController.popBackStack() })
+            }
         }
 
-        composable(Routes.RECOVER) {
-            val vm: RecoverPasswordViewModel = viewModel(
-                factory = viewModelFactory { initializer { RecoverPasswordViewModel(container.authRepository) } }
-            )
-            RecoverPasswordScreen(
-                viewModel = vm,
-                onBack = { navController.popBackStack() }
-            )
+        composable(
+            route = Routes.STATS,
+            arguments = listOf(navArgument("electionId") { type = NavType.LongType })
+        ) { entry ->
+            val electionId = entry.arguments?.getLong("electionId") ?: return@composable
+            if (sessionUser != null) {
+                val vm: StatisticsViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer { StatisticsViewModel(electionId, container.statisticsRepository) }
+                    }
+                )
+                StatisticsScreen(vm, onBack = { navController.popBackStack() })
+            }
         }
 
         composable(Routes.HOME) {
@@ -323,6 +398,8 @@ fun AppNavHost(
             }
         }
 
+        // ---- Audit records, support and fraud reports ----
+
         composable(Routes.AUDIT) {
             if (allowed(auditRoles)) {
                 val vm: AuditLogViewModel = viewModel(
@@ -374,6 +451,11 @@ fun AppNavHost(
             val ticketId = entry.arguments?.getLong("ticketId") ?: return@composable
             if (allowed(manageRoles)) {
                 val vm: TicketDetailViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer { TicketDetailViewModel(ticketId, container.supportRepository) }
+                    }
+                )
+                TicketDetailScreen(vm, onBack = { navController.popBackStack() })
                     factory = viewModelFactory { initializer { TicketDetailViewModel(ticketId, container.supportRepository) } }
                 )
                 TicketDetailScreen(vm, onBack = { navController.popBackStack() })
