@@ -1,5 +1,6 @@
 package com.univote.evoting.data.repository
 
+import com.univote.evoting.data.audit.AuditLogger
 import com.univote.evoting.core.security.PasswordHasher
 import com.univote.evoting.core.security.PasswordPolicy
 import com.univote.evoting.data.local.UniVoteDatabase
@@ -8,7 +9,10 @@ import com.univote.evoting.data.local.entity.UserEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class LocalAuthRepository(db: UniVoteDatabase) : AuthRepository {
+class LocalAuthRepository(
+    db: UniVoteDatabase,
+    private val audit: AuditLogger? = null
+) : AuthRepository {
 
     private val userDao = db.userDao()
     private val voterDao = db.voterDao()
@@ -28,6 +32,7 @@ class LocalAuthRepository(db: UniVoteDatabase) : AuthRepository {
             }
             if (PasswordHasher.verify(password, user.salt, user.passwordHash)) {
                 userDao.update(user.copy(failedAttempts = 0, lockedUntil = 0L))
+                if (user.role != Role.VOTER) audit?.log(user.username, "STAFF_SIGN_IN")
                 LoginResult.Success(user.toSessionUser())
             } else {
                 recordFailure(user, now)
@@ -63,6 +68,7 @@ class LocalAuthRepository(db: UniVoteDatabase) : AuthRepository {
                 voterRegNumber = reg
             )
         )
+        audit?.log(reg, "VOTER_REGISTERED")
         AccountResult.Success
     }
 
@@ -94,6 +100,7 @@ class LocalAuthRepository(db: UniVoteDatabase) : AuthRepository {
         userDao.update(
             user.copy(passwordHash = hashed.hash, salt = hashed.salt, failedAttempts = 0, lockedUntil = 0L)
         )
+        audit?.log(reg, "PASSWORD_RESET")
         AccountResult.Success
     }
 
@@ -102,6 +109,7 @@ class LocalAuthRepository(db: UniVoteDatabase) : AuthRepository {
         val attempts = user.failedAttempts + 1
         return if (attempts >= MAX_FAILED_ATTEMPTS) {
             userDao.update(user.copy(failedAttempts = 0, lockedUntil = now + LOCK_DURATION_MS))
+            audit?.log(user.username, "ACCOUNT_LOCKED", "after $MAX_FAILED_ATTEMPTS failed attempts")
             LoginResult.Locked(LOCK_DURATION_MS / 60_000)
         } else {
             userDao.update(user.copy(failedAttempts = attempts))
