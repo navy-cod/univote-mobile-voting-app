@@ -20,5 +20,6 @@ class UniVoteApp : Application() {
         NotificationChannels.register(this)
         container = AppContainer(this)
         appScope.launch { container.initialize() }
+        appScope.launch { container.notificationCenter.run() }
     }
 }

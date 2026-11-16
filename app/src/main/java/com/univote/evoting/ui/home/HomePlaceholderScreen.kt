@@ -3,13 +3,8 @@ package com.univote.evoting.ui.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,33 +19,12 @@ import com.univote.evoting.data.repository.SessionUser
 /** Temporary role-specific landing page. Later phases replace it with the real dashboards. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePlaceholderScreen(
-    user: SessionUser,
-    unreadNotifications: Int,
-    onOpenNotifications: () -> Unit,
-    onSignOut: () -> Unit
-) {
+fun HomePlaceholderScreen(user: SessionUser, onSignOut: () -> Unit, onSupport: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("UniVote") },
-                actions = {
-                    IconButton(onClick = onOpenNotifications) {
-                        BadgedBox(
-                            badge = {
-                                if (unreadNotifications > 0) {
-                                    Badge { Text(if (unreadNotifications > 99) "99+" else unreadNotifications.toString()) }
-                                }
-                            }
-                        ) {
-                            Icon(
-                                Icons.Default.Notifications,
-                                contentDescription = if (unreadNotifications > 0) "Notifications, $unreadNotifications unread" else "Notifications"
-                            )
-                        }
-                    }
-                    TextButton(onClick = onSignOut) { Text("Sign out") }
-                }
+                actions = { TextButton(onClick = onSignOut) { Text("Sign out") } }
             )
         }
     ) { padding ->
@@ -66,6 +40,9 @@ fun HomePlaceholderScreen(
             )
             Text("Coming in later phases:", style = MaterialTheme.typography.titleSmall)
             user.role.upcomingFeatures().forEach { Text("\u2022 $it") }
+            androidx.compose.material3.Button(onClick = onSupport, modifier = Modifier.fillMaxWidth()) {
+                Text(if (user.role == Role.SUPPORT_OFFICER || user.role == Role.SYSTEM_ADMIN || user.role == Role.ELECTION_ADMIN) "Review support reports" else "Support & fraud reporting")
+            }
         }
     }
 }
@@ -84,4 +61,4 @@ private fun Role.upcomingFeatures(): List<String> = when (this) {
     Role.SYSTEM_ADMIN -> listOf("Manage accounts and roles", "System configuration")
     Role.OBSERVER -> listOf("Live participation statistics", "Read-only audit records")
     Role.SUPPORT_OFFICER -> listOf("Review and assign support and fraud reports")
-}
+}

@@ -1,5 +1,6 @@
 package com.univote.evoting.data.repository
 
+import com.univote.evoting.data.audit.AuditLogger
 import com.univote.evoting.core.security.PasswordHasher
 import com.univote.evoting.core.security.PasswordPolicy
 import com.univote.evoting.data.local.UniVoteDatabase
@@ -10,7 +11,7 @@ import kotlinx.coroutines.withContext
 
 class LocalAuthRepository(
     db: UniVoteDatabase,
-    private val notifications: NotificationPublisher = NotificationPublisher.None
+    private val audit: AuditLogger? = null
 ) : AuthRepository {
 
     private val userDao = db.userDao()
@@ -31,6 +32,7 @@ class LocalAuthRepository(
             }
             if (PasswordHasher.verify(password, user.salt, user.passwordHash)) {
                 userDao.update(user.copy(failedAttempts = 0, lockedUntil = 0L))
+                if (user.role != Role.VOTER) audit?.log(user.username, "STAFF_SIGN_IN")
                 LoginResult.Success(user.toSessionUser())
             } else {
                 recordFailure(user, now)
@@ -56,7 +58,7 @@ class LocalAuthRepository(
         PasswordPolicy.validate(password)?.let { return@withContext AccountResult.Failure(it) }
 
         val hashed = PasswordHasher.hash(password)
-        val newUserId = userDao.insert(
+        userDao.insert(
             UserEntity(
                 username = reg,
                 displayName = voter.fullName,
@@ -66,7 +68,7 @@ class LocalAuthRepository(
                 voterRegNumber = reg
             )
         )
-        notifications.accountCreated(newUserId)
+        audit?.log(reg, "VOTER_REGISTERED")
         AccountResult.Success
     }
 
@@ -98,7 +100,7 @@ class LocalAuthRepository(
         userDao.update(
             user.copy(passwordHash = hashed.hash, salt = hashed.salt, failedAttempts = 0, lockedUntil = 0L)
         )
-        notifications.passwordChanged(user.id)
+        audit?.log(reg, "PASSWORD_RESET")
         AccountResult.Success
     }
 
@@ -107,8 +109,7 @@ class LocalAuthRepository(
         val attempts = user.failedAttempts + 1
         return if (attempts >= MAX_FAILED_ATTEMPTS) {
             userDao.update(user.copy(failedAttempts = 0, lockedUntil = now + LOCK_DURATION_MS))
-            // Alert once, at the moment the lock starts (not on every attempt made while locked).
-            notifications.accountLocked(user.id, LOCK_DURATION_MS / 60_000)
+            audit?.log(user.username, "ACCOUNT_LOCKED", "after $MAX_FAILED_ATTEMPTS failed attempts")
             LoginResult.Locked(LOCK_DURATION_MS / 60_000)
         } else {
             userDao.update(user.copy(failedAttempts = attempts))
@@ -127,4 +128,4 @@ class LocalAuthRepository(
         const val ROLL_MISMATCH = "Those details do not match the approved student roll."
         const val RECOVERY_FAILED = "We could not verify those details."
     }
-}
+}
