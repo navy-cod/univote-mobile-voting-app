@@ -38,7 +38,6 @@ class AppContainer(context: Context) {
     ).build()
 
     val sessionManager = SessionManager(context.applicationContext)
-    val authRepository: AuthRepository = LocalAuthRepository(database)
     val supportTicketRepository = SupportTicketRepository(database.supportTicketDao())
 
     val auditLogger = AuditLogger(database)

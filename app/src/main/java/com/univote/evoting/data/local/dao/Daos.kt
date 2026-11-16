@@ -291,11 +291,13 @@ private const val TICKET_SELECT =
             "t.resolutionNote AS resolutionNote, t.createdAt AS createdAt, t.updatedAt AS updatedAt " +
             "FROM support_tickets t INNER JOIN users r ON r.id = t.reporterUserId " +
             "LEFT JOIN users a ON a.id = t.assignedToUserId"
-
 @Dao
 interface SupportTicketDao {
-    @Insert suspend fun insert(ticket: SupportTicketEntity): Long
-    @Update suspend fun update(ticket: SupportTicketEntity)
+    @Insert
+    suspend fun insert(ticket: SupportTicketEntity): Long
+
+    @Update
+    suspend fun update(ticket: SupportTicketEntity)
 
     @Query("SELECT * FROM support_tickets WHERE id = :id LIMIT 1")
     suspend fun findById(id: Long): SupportTicketEntity?
@@ -308,26 +310,23 @@ interface SupportTicketDao {
 
     @Query(TICKET_SELECT + " WHERE t.id = :id")
     fun observeRow(id: Long): Flow<TicketRow?>
-}
-
-@Dao
-interface SupportTicketDao {
-    @Insert
-    suspend fun insert(ticket: com.univote.evoting.data.local.entity.SupportTicketEntity): Long
 
     @Query("SELECT * FROM support_tickets WHERE reporterUserId = :userId ORDER BY createdAt DESC")
-    fun observeForReporter(userId: Long): Flow<List<com.univote.evoting.data.local.entity.SupportTicketEntity>>
+    fun observeForReporter(userId: Long): Flow<List<SupportTicketEntity>>
 
     @Query("SELECT * FROM support_tickets ORDER BY createdAt DESC")
-    fun observeAll(): Flow<List<com.univote.evoting.data.local.entity.SupportTicketEntity>>
+    fun observeAllEntities(): Flow<List<SupportTicketEntity>>
 
     @Query("SELECT * FROM support_tickets WHERE referenceNo = :referenceNo LIMIT 1")
-    suspend fun findByReference(referenceNo: String): com.univote.evoting.data.local.entity.SupportTicketEntity?
+    suspend fun findByReference(referenceNo: String): SupportTicketEntity?
 
-    @Query("UPDATE support_tickets SET status = :status, resolutionNote = :resolutionNote, updatedAt = :updatedAt WHERE id = :ticketId")
+    @Query(
+        "UPDATE support_tickets SET status = :status, resolutionNote = :resolutionNote, " +
+                "updatedAt = :updatedAt WHERE id = :ticketId"
+    )
     suspend fun updateStatus(
         ticketId: Long,
-        status: com.univote.evoting.data.local.entity.TicketStatus,
+        status: TicketStatus,
         resolutionNote: String?,
         updatedAt: Long
     ): Int

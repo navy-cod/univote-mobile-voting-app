@@ -10,7 +10,7 @@ import java.util.UUID
 
 class SupportTicketRepository(private val dao: SupportTicketDao) {
     fun observeForUser(userId: Long): Flow<List<SupportTicketEntity>> = dao.observeForReporter(userId)
-    fun observeAll(): Flow<List<SupportTicketEntity>> = dao.observeAll()
+    fun observeAll(): Flow<List<SupportTicketEntity>> = dao.observeAllEntities()
 
     suspend fun submit(
         reporterUserId: Long,

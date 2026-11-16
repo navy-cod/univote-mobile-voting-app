@@ -16,6 +16,7 @@ fun AdminHomeScreen(
     onVoters: () -> Unit,
     onDepartments: () -> Unit,
     onParties: () -> Unit,
+    onInsights: () -> Unit,
     onSupport: () -> Unit,
     onAudit: () -> Unit,
     onAlerts:() -> Unit

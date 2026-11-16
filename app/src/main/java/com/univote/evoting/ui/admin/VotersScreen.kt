@@ -173,7 +173,7 @@ fun VotersScreen(viewModel: VotersViewModel, onBack: () -> Unit) {
             initial = editing,
             departments = departments,
             error = viewModel.message,
-            onDismiss = { showForm = false },
+            onDismiss = { viewModel.clearMessage(); showForm = false },
             onSave = { reg, name, deptId, year, eligible ->
                 viewModel.save(editing, reg, name, deptId, year, eligible) { showForm = false }
             }

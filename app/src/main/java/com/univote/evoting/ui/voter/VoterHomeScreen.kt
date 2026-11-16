@@ -1,6 +1,5 @@
 package com.univote.evoting.ui.voter
 
-import android.provider.CalendarContract
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,10 +13,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.univote.evoting.core.util.DateFormats
 import com.univote.evoting.data.local.entity.ElectionStatus
+import com.univote.evoting.data.repository.NotificationRepository
 import com.univote.evoting.data.repository.SessionUser
 import com.univote.evoting.data.repository.VoterElectionItem
 import com.univote.evoting.data.repository.VotingRepository
-import com.univote.evoting.data.repository.NotificationRepository
 import com.univote.evoting.ui.notifications.AlertsButton
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +29,7 @@ class VoterHomeViewModel(repo: VotingRepository, notifications: NotificationRepo
     val unread: StateFlow<Int> =
         notifications.observeUnreadCount().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VoterHomeScreen(
@@ -45,10 +45,6 @@ fun VoterHomeScreen(
     val elections by viewModel.elections.collectAsStateWithLifecycle()
     val unread by viewModel.unread.collectAsStateWithLifecycle()
 
-    OutlinedButton(onClick = onSupport, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-        Text("Report a problem or suspected fraud")
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -57,6 +53,7 @@ fun VoterHomeScreen(
                     AlertsButton(unread, onAlerts)
                     TextButton(onClick = onSignOut) { Text("Sign out") }
                 }
+            )
         }
     ) { padding ->
         LazyColumn(
@@ -68,20 +65,29 @@ fun VoterHomeScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Welcome, ${user.displayName}", style = MaterialTheme.typography.headlineSmall)
                     Text("Elections", style = MaterialTheme.typography.titleMedium)
-                    OutlinedButton(onClick = onSupport, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    OutlinedButton(
+                        onClick = onSupport,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                    ) {
                         Text("Report a problem or suspected fraud")
                     }
                 }
             }
             if (elections.isEmpty()) item { Text("There are no elections available yet.") }
-            items(elections, key = { it.election.id }) { item -> ElectionCard(item, onVote, onStats, onResults) }
-            )
+            items(elections, key = { it.election.id }) { item ->
+                ElectionCard(item, onVote, onStats, onResults)
+            }
         }
     }
 }
 
 @Composable
-private fun ElectionCard(item: VoterElectionItem, onVote: (Long) -> Unit) {
+private fun ElectionCard(
+    item: VoterElectionItem,
+    onVote: (Long) -> Unit,
+    onStats: (Long) -> Unit,
+    onResults: (Long) -> Unit
+) {
     val e = item.election
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -98,13 +104,33 @@ private fun ElectionCard(item: VoterElectionItem, onVote: (Long) -> Unit) {
                 ElectionStatus.CLOSED -> "Voting has closed"
                 ElectionStatus.DRAFT -> ""
             }
-            Text(status, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            if (status.isNotEmpty()) {
+                Text(status, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            }
 
             if (item.receiptCode != null) {
                 Text("You have voted. Receipt code: ${item.receiptCode}", style = MaterialTheme.typography.bodyMedium)
             } else if (e.status == ElectionStatus.OPEN) {
-                Button(onClick = { onVote(e.id) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                Button(
+                    onClick = { onVote(e.id) },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                ) {
                     Text("Vote now")
+                }
+            }
+
+            OutlinedButton(
+                onClick = { onStats(e.id) },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+            ) {
+                Text("Live statistics")
+            }
+            if (e.resultsPublished) {
+                Button(
+                    onClick = { onResults(e.id) },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                ) {
+                    Text("View official results")
                 }
             }
         }

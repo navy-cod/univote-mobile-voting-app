@@ -68,7 +68,7 @@ fun PartiesScreen(viewModel: PartiesViewModel, onBack: () -> Unit) {
         PartyFormDialog(
             initial = editing,
             error = viewModel.message,
-            onDismiss = { showForm = false },
+            onDismiss = { viewModel.clearMessage(); showForm = false },
             onSave = { name, acronym, slogan ->
                 viewModel.save(editing?.id, name, acronym, slogan) { showForm = false }
             }
