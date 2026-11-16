@@ -66,7 +66,7 @@ fun DepartmentsScreen(viewModel: DepartmentsViewModel, onBack: () -> Unit) {
         DepartmentFormDialog(
             initial = editing,
             error = viewModel.message,
-            onDismiss = { showForm = false },
+            onDismiss = { viewModel.clearMessage(); showForm = false },
             onSave = { name, code -> viewModel.save(editing?.id, name, code) { showForm = false } }
         )
     }
