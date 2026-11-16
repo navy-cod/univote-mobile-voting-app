@@ -331,3 +331,37 @@ interface SupportTicketDao {
         updatedAt: Long
     ): Int
 }
+
+/** Every query is scoped by userId so one account can never read or change another account's inbox. */
+@Dao
+interface NotificationDao {
+    @Insert
+    suspend fun insert(notification: NotificationEntity): Long
+
+    @Insert
+    suspend fun insertAll(notifications: List<NotificationEntity>): List<Long>
+
+    @Query("SELECT * FROM notifications WHERE userId = :userId ORDER BY createdAt DESC, id DESC")
+    fun observeForUser(userId: Long): Flow<List<NotificationEntity>>
+
+    @Query("SELECT COUNT(*) FROM notifications WHERE userId = :userId AND isRead = 0")
+    fun observeUnreadCount(userId: Long): Flow<Int>
+
+    @Query("SELECT id FROM notifications WHERE userId = :userId AND isRead = 0")
+    suspend fun unreadIds(userId: Long): List<Long>
+
+    @Query("SELECT id FROM notifications WHERE userId = :userId")
+    suspend fun allIds(userId: Long): List<Long>
+
+    @Query("UPDATE notifications SET isRead = 1 WHERE id = :id AND userId = :userId")
+    suspend fun markRead(id: Long, userId: Long)
+
+    @Query("UPDATE notifications SET isRead = 1 WHERE userId = :userId AND isRead = 0")
+    suspend fun markAllRead(userId: Long)
+
+    @Query("DELETE FROM notifications WHERE id = :id AND userId = :userId")
+    suspend fun delete(id: Long, userId: Long)
+
+    @Query("DELETE FROM notifications WHERE userId = :userId")
+    suspend fun deleteAll(userId: Long)
+}

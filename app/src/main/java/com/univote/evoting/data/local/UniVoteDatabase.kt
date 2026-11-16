@@ -6,6 +6,7 @@ import com.univote.evoting.data.local.dao.AuditLogDao
 import com.univote.evoting.data.local.dao.CandidateDao
 import com.univote.evoting.data.local.dao.DepartmentDao
 import com.univote.evoting.data.local.dao.ElectionDao
+import com.univote.evoting.data.local.dao.NotificationDao
 import com.univote.evoting.data.local.dao.PartyDao
 import com.univote.evoting.data.local.dao.PositionDao
 import com.univote.evoting.data.local.dao.ResultDao
