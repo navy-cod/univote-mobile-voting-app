@@ -1,6 +1,8 @@
 package com.univote.evoting.ui.admin
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -19,8 +21,7 @@ fun AdminHomeScreen(
     onInsights: () -> Unit,
     onSupport: () -> Unit,
     onAudit: () -> Unit,
-    onAlerts:() -> Unit
-
+    onAlerts: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -31,7 +32,7 @@ fun AdminHomeScreen(
         }
     ) { padding ->
         Column(
-            Modifier.padding(padding).padding(16.dp),
+            Modifier.padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text("Welcome, ${user.displayName}", style = MaterialTheme.typography.headlineSmall)

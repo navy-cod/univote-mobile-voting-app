@@ -1,54 +1,20 @@
 package com.univote.evoting
 
-import android.content.Intent
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.univote.evoting.ui.navigation.AppNavHost
 import com.univote.evoting.ui.theme.UniVoteTheme
 
 class MainActivity : ComponentActivity() {
+
     private val container by lazy { (application as UniVoteApp).container }
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        // Only on a fresh launch: after rotation the same intent is redelivered and must not reopen the inbox.
-        if (savedInstanceState == null) handleNotificationIntent(intent)
-
-        setContent {
-            UniVoteTheme {
-                AppNavHost(container = container, onSignedIn=::requestNotificationPermissionIfNeeded)
-            }
-        }
-    }
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        handleNotificationIntent(intent)
-    }
-
-    private fun handleNotificationIntent(intent: Intent?) {
-        if (intent?.getBooleanExtra(NotificationIntents.EXTRA_OPEN_NOTIFICATIONS, false) == true) {
-            container.openNotificationsRequested.value = true
-            intent.removeExtra(NotificationIntents.EXTRA_OPEN_NOTIFICATIONS)
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        container.sessionManager.validate()   // expired session -> signed out
-    }
-
-    override fun onUserInteraction() {
-        super.onUserInteraction()
-        container.sessionManager.touch()      // any tap/swipe counts as activity
-    }
 
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* no action needed */ }
@@ -60,5 +26,25 @@ class MainActivity : ComponentActivity() {
         ) {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            UniVoteTheme {
+                AppNavHost(container = container, onSignedIn = ::requestNotificationPermissionIfNeeded)
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        container.sessionManager.validate() // an expired session signs the user out
+    }
+
+    override fun onUserInteraction() {
+        super.onUserInteraction()
+        container.sessionManager.touch() // any tap or swipe counts as activity
     }
 }

@@ -173,7 +173,7 @@ fun VotersScreen(viewModel: VotersViewModel, onBack: () -> Unit) {
             initial = editing,
             departments = departments,
             error = viewModel.message,
-            onDismiss = { viewModel.clearMessage(); showForm = false },
+            onDismiss = { showForm = false },
             onSave = { reg, name, deptId, year, eligible ->
                 viewModel.save(editing, reg, name, deptId, year, eligible) { showForm = false }
             }
@@ -228,7 +228,10 @@ private fun VoterFormDialog(
             selected = deptId,
             onSelected = { deptId = it }
         )
-        LabeledTextField(year, { year = it.filter(Char::isDigit).take(1) }, "Year of study (1-6)", keyboardType = KeyboardType.Number)
+        LabeledTextField(
+            year, { year = it.filter(Char::isDigit).take(1) }, "Year of study (1-6)",
+            keyboardType = KeyboardType.Number
+        )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Eligible to vote", modifier = Modifier.weight(1f))
             Switch(checked = eligible, onCheckedChange = { eligible = it })

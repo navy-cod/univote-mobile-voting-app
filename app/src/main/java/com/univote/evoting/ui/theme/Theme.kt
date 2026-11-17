@@ -39,7 +39,7 @@ private val DarkColors = darkColorScheme(
     error = ErrorDark
 )
 
-/** Fixed brand colours (no dynamic colour) so contrast stays predictable for the accessibility tests. */
+/** Fixed brand colours (no dynamic colour) so contrast stays predictable. */
 @Composable
 fun UniVoteTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

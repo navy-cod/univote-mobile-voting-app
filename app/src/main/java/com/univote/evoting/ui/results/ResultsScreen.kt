@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
@@ -128,15 +129,20 @@ private fun PositionResultCard(position: PositionResult) {
             if (!position.reconciles) ErrorText("Counts do not match the participation records.")
 
             position.candidates.forEach { c ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(
-                        text = "${c.name} (${c.party})" + if (c.isWinner) " - WINNER" else "",
-                        style = if (c.isWinner) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f)
+                Column(Modifier.semantics(mergeDescendants = true) {}) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(
+                            text = "${c.name} (${c.party})" + if (c.isWinner) " - WINNER" else "",
+                            style = if (c.isWinner) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text("${c.votes} (${"%.1f".format(c.percent)}%)", style = MaterialTheme.typography.bodyMedium)
+                    }
+                    LinearProgressIndicator(
+                        progress = { (c.percent / 100.0).toFloat() },
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    Text("${c.votes} (${"%.1f".format(c.percent)}%)", style = MaterialTheme.typography.bodyMedium)
                 }
-                LinearProgressIndicator(progress = { (c.percent / 100.0).toFloat() }, modifier = Modifier.fillMaxWidth())
             }
             if (position.isTie) {
                 Text(

@@ -16,17 +16,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Inserts demo data on first launch so every later phase can be tested straight away.
- *
- * DEVELOPMENT ONLY: the demo passwords below must be removed before any real deployment.
+ * Inserts demo data on first launch. DEVELOPMENT ONLY: remove the demo passwords before real deployment.
  *
  * Demo logins (username / password):
- *   sysadmin  / System@123     (SYSTEM_ADMIN)
- *   admin     / Admin@123      (ELECTION_ADMIN)
- *   observer  / Observer@123   (OBSERVER)
- *   support   / Support@123    (SUPPORT_OFFICER)
- *   CS/0001/2024  / Voter@123  (VOTER, Computer Science)
- *   BBA/0001/2024 / Voter@123  (VOTER, Business Administration)
+ *   sysadmin / System@123, admin / Admin@123, observer / Observer@123, support / Support@123,
+ *   CS/0001/2024 / Voter@123, BBA/0001/2024 / Voter@123
  */
 class DatabaseSeeder(private val db: UniVoteDatabase) {
 
@@ -99,7 +93,9 @@ class DatabaseSeeder(private val db: UniVoteDatabase) {
                 name: String,
                 manifesto: String,
                 status: CandidateStatus = CandidateStatus.APPROVED
-            ) = candDao.insert(CandidateEntity(positionId = positionId, partyId = partyId, fullName = name, manifesto = manifesto, status = status))
+            ) = candDao.insert(
+                CandidateEntity(positionId = positionId, partyId = partyId, fullName = name, manifesto = manifesto, status = status)
+            )
 
             candidate(president, psf, "Daniel Kimani", "Better study spaces, extended library hours and transparent student funds.")
             candidate(president, crm, "Faith Wambui", "Affordable meals, stronger mental-health support and regular open forums.")

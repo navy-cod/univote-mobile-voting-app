@@ -7,7 +7,10 @@ import com.univote.evoting.data.local.entity.CandidateEntity
 import com.univote.evoting.data.local.entity.CandidateStatus
 import com.univote.evoting.data.local.entity.ElectionEntity
 import com.univote.evoting.data.local.entity.ElectionStatus
+import com.univote.evoting.data.local.entity.NotificationEntity
+import com.univote.evoting.data.local.entity.NotificationType
 import com.univote.evoting.data.local.entity.PositionEntity
+import com.univote.evoting.data.local.entity.Role
 import com.univote.evoting.domain.ElectionStateMachine
 import kotlinx.coroutines.flow.Flow
 
@@ -19,6 +22,8 @@ class ElectionRepository(
     private val electionDao = db.electionDao()
     private val positionDao = db.positionDao()
     private val candidateDao = db.candidateDao()
+    private val userDao = db.userDao()
+    private val notificationDao = db.notificationDao()
 
     fun observeAll(): Flow<List<ElectionEntity>> = electionDao.observeAll()
     fun observe(id: Long): Flow<ElectionEntity?> = electionDao.observeById(id)
@@ -47,6 +52,12 @@ class ElectionRepository(
             election.copy(title = title.trim(), description = description.trim(), startTime = start, endTime = end)
         )
         audit.log(actor(), "ELECTION_UPDATED", "id=$id")
+        if (election.status == ElectionStatus.SCHEDULED) {
+            notifyVoters(
+                "Election schedule changed",
+                "\"${title.trim()}\" now runs from ${DateFormats.format(start)} to ${DateFormats.format(end)}."
+            )
+        }
         return ActionResult.Success
     }
 
@@ -75,6 +86,25 @@ class ElectionRepository(
 
         electionDao.updateStatus(electionId, target)
         audit.log(actor(), "ELECTION_STATUS_CHANGED", "id=$electionId from=${election.status} to=$target")
+
+        val name = "\"${election.title}\""
+        when (target) {
+            ElectionStatus.SCHEDULED -> notifyVoters(
+                "Upcoming election",
+                "$name runs from ${DateFormats.format(election.startTime)} to ${DateFormats.format(election.endTime)}."
+            )
+            ElectionStatus.OPEN -> notifyVoters(
+                if (election.status == ElectionStatus.SUSPENDED) "Voting resumed" else "Voting is open",
+                "Voting for $name is open until ${DateFormats.format(election.endTime)}."
+            )
+            ElectionStatus.SUSPENDED -> notifyVoters(
+                "Voting suspended", "Voting for $name is temporarily suspended. You will be told when it resumes."
+            )
+            ElectionStatus.CLOSED -> notifyVoters(
+                "Voting closed", "Voting for $name has closed. Results will be announced once verified."
+            )
+            else -> Unit
+        }
         return ActionResult.Success
     }
 
@@ -83,6 +113,7 @@ class ElectionRepository(
         electionDao.findExpired(System.currentTimeMillis()).forEach { e ->
             electionDao.updateStatus(e.id, ElectionStatus.CLOSED)
             audit.log("system", "ELECTION_AUTO_CLOSED", "id=${e.id}")
+            notifyVoters("Voting closed", "Voting for \"${e.title}\" has closed.")
         }
     }
 
@@ -152,6 +183,18 @@ class ElectionRepository(
     }
 
     // ---- Helpers ----
+
+    private suspend fun notifyVoters(title: String, message: String) {
+        val now = System.currentTimeMillis()
+        notificationDao.insertAll(
+            userDao.listIdsByRoles(listOf(Role.VOTER.name)).map {
+                NotificationEntity(
+                    userId = it, title = title, message = message,
+                    type = NotificationType.SCHEDULE, createdAt = now
+                )
+            }
+        )
+    }
 
     private suspend fun electionOf(candidate: CandidateEntity): Long =
         positionDao.findById(candidate.positionId)?.electionId ?: -1L

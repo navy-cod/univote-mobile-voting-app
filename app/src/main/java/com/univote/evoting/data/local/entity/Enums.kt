@@ -10,5 +10,4 @@ enum class TicketType { TECHNICAL, FRAUD }
 
 enum class TicketStatus { OPEN, IN_REVIEW, RESOLVED, CLOSED }
 
-/** Stored by name, so new values need no schema migration. [ERROR] and [CONFIRMATION] drive the error / confirmation channels. */
-enum class NotificationType { INFO, VOTE_CONFIRMATION, SCHEDULE, RESULTS, SUPPORT, CONFIRMATION, ERROR }
+enum class NotificationType { INFO, VOTE_CONFIRMATION, SCHEDULE, RESULTS, SUPPORT }

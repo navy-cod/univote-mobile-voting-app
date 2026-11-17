@@ -39,10 +39,7 @@ fun SplashScreen(container: AppContainer, onReady: () -> Unit) {
                 color = MaterialTheme.colorScheme.primary
             )
             CircularProgressIndicator()
-            Text(
-                text = "Preparing secure database...",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Text(text = "Preparing secure database...", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

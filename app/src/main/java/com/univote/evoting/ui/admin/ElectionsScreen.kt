@@ -66,7 +66,7 @@ fun ElectionsScreen(viewModel: ElectionsViewModel, onBack: () -> Unit, onOpenEle
         ElectionFormDialog(
             initial = null,
             error = viewModel.message,
-            onDismiss = { viewModel.clearMessage(); showForm = false },
+            onDismiss = { showForm = false },
             onSave = { title, description, start, end ->
                 viewModel.create(title, description, start, end) { showForm = false }
             }

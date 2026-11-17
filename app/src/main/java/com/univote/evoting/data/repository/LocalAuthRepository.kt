@@ -1,8 +1,8 @@
 package com.univote.evoting.data.repository
 
-import com.univote.evoting.data.audit.AuditLogger
 import com.univote.evoting.core.security.PasswordHasher
 import com.univote.evoting.core.security.PasswordPolicy
+import com.univote.evoting.data.audit.AuditLogger
 import com.univote.evoting.data.local.UniVoteDatabase
 import com.univote.evoting.data.local.entity.Role
 import com.univote.evoting.data.local.entity.UserEntity
@@ -86,7 +86,9 @@ class LocalAuthRepository(
         }
         val now = System.currentTimeMillis()
         if (user.lockedUntil > now) {
-            return@withContext AccountResult.Failure("Too many attempts. Try again in ${minutesLeft(user.lockedUntil, now)} minute(s).")
+            return@withContext AccountResult.Failure(
+                "Too many attempts. Try again in ${minutesLeft(user.lockedUntil, now)} minute(s)."
+            )
         }
         val detailsMatch = voter.fullName.equals(fullName.trim(), ignoreCase = true) &&
                 voter.yearOfStudy == yearOfStudy

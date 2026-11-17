@@ -47,7 +47,7 @@ data class FeedbackEntity(
     val createdAt: Long = System.currentTimeMillis()
 )
 
-/** Tamper-evident log: each entry stores the hash of the previous one (a simple hash chain). No FKs so logs outlive deleted users. */
+/** Tamper-evident log: each entry stores the hash of the previous one. No FKs so logs outlive deleted users. */
 @Entity(tableName = "audit_logs")
 data class AuditLogEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

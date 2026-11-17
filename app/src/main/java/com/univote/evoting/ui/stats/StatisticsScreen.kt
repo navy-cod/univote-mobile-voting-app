@@ -8,6 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -60,9 +62,9 @@ fun StatisticsScreen(viewModel: StatisticsViewModel, onBack: () -> Unit) {
                     }
                 }
                 item { Text("By position", style = MaterialTheme.typography.titleMedium) }
-                items(s.positions) { ProgressRow(it.title, it.voted, it.eligible) }
+                items(s.positions) { ProgressRow(it.title, it.voted, it.eligible, it.hidden) }
                 item { Text("By department", style = MaterialTheme.typography.titleMedium) }
-                items(s.departments) { ProgressRow(it.name, it.voted, it.eligible) }
+                items(s.departments) { ProgressRow(it.name, it.voted, it.eligible, it.hidden) }
                 item {
                     Text(
                         "Candidate totals stay hidden until the official results are published.",
@@ -75,13 +77,22 @@ fun StatisticsScreen(viewModel: StatisticsViewModel, onBack: () -> Unit) {
 }
 
 @Composable
-private fun ProgressRow(label: String, voted: Int, eligible: Int) {
+private fun ProgressRow(label: String, voted: Int, eligible: Int, hidden: Boolean = false) {
     val fraction = if (eligible > 0) (voted.toFloat() / eligible).coerceIn(0f, 1f) else 0f
-    Column(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    val summary = if (hidden) "hidden to protect voter privacy"
+    else "$voted of $eligible, ${"%.0f".format(fraction * 100)} percent"
+    Column(
+        Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            .semantics(mergeDescendants = true) { contentDescription = "$label: $summary" },
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-            Text("$voted of $eligible (${"%.0f".format(fraction * 100)}%)", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                if (hidden) "Hidden (group too small)" else "$voted of $eligible (${"%.0f".format(fraction * 100)}%)",
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
-        LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth())
+        if (!hidden) LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth())
     }
 }

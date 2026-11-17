@@ -62,21 +62,16 @@ fun VoterHomeScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Welcome, ${user.displayName}", style = MaterialTheme.typography.headlineSmall)
                     Text("Elections", style = MaterialTheme.typography.titleMedium)
-                    OutlinedButton(
-                        onClick = onSupport,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                    ) {
+                    OutlinedButton(onClick = onSupport, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                         Text("Report a problem or suspected fraud")
                     }
                 }
             }
             if (elections.isEmpty()) item { Text("There are no elections available yet.") }
-            items(elections, key = { it.election.id }) { item ->
-                ElectionCard(item, onVote, onStats, onResults)
-            }
+            items(elections, key = { it.election.id }) { item -> ElectionCard(item, onVote, onStats, onResults) }
         }
     }
 }
@@ -104,32 +99,22 @@ private fun ElectionCard(
                 ElectionStatus.CLOSED -> "Voting has closed"
                 ElectionStatus.DRAFT -> ""
             }
-            if (status.isNotEmpty()) {
-                Text(status, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            }
+            Text(status, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
 
             if (item.receiptCode != null) {
                 Text("You have voted. Receipt code: ${item.receiptCode}", style = MaterialTheme.typography.bodyMedium)
             } else if (e.status == ElectionStatus.OPEN) {
-                Button(
-                    onClick = { onVote(e.id) },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                ) {
+                Button(onClick = { onVote(e.id) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                     Text("Vote now")
                 }
             }
-
-            OutlinedButton(
-                onClick = { onStats(e.id) },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
-            ) {
-                Text("Live statistics")
+            if (e.status != ElectionStatus.SCHEDULED) {
+                OutlinedButton(onClick = { onStats(e.id) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    Text("Live turnout")
+                }
             }
             if (e.resultsPublished) {
-                Button(
-                    onClick = { onResults(e.id) },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                ) {
+                Button(onClick = { onResults(e.id) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                     Text("View official results")
                 }
             }

@@ -15,7 +15,9 @@ object AuditChain {
         var previous = AuditLogger.GENESIS_HASH
         entries.sortedBy { it.id }.forEach { e ->
             if (e.previousHash != previous) {
-                return ChainStatus.Broken(e.id, "Its link to the previous entry does not match (an entry may have been removed or changed).")
+                return ChainStatus.Broken(
+                    e.id, "Its link to the previous entry does not match (an entry may have been removed or changed)."
+                )
             }
             val expected = AuditLogger.computeHash(e.previousHash, e.timestamp, e.actor, e.action, e.details)
             if (e.entryHash != expected) {

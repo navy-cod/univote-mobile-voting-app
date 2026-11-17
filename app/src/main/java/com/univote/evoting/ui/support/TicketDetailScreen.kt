@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.univote.evoting.core.util.DateFormats
-import com.univote.evoting.data.local.TicketRow
+import com.univote.evoting.data.local.dao.TicketRow
 import com.univote.evoting.data.local.entity.TicketStatus
 import com.univote.evoting.data.repository.SupportRepository
 import com.univote.evoting.domain.TicketWorkflow
@@ -70,7 +70,10 @@ fun TicketDetailScreen(viewModel: TicketDetailViewModel, onBack: () -> Unit) {
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Text("Reported by ${t.reporterName} on ${DateFormats.format(t.createdAt)}", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "Reported by ${t.reporterName} on ${DateFormats.format(t.createdAt)}",
+                    style = MaterialTheme.typography.bodySmall
+                )
                 Text("Assigned to: ${t.assignedToName ?: "nobody yet"}", style = MaterialTheme.typography.bodySmall)
                 Card(Modifier.fillMaxWidth()) { Text(t.description, Modifier.padding(16.dp)) }
 
