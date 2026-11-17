@@ -26,11 +26,6 @@ class SupportQueueViewModel(repo: SupportRepository) : ViewModel() {
         repo.observeQueue().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     var filter by mutableStateOf<TicketStatus?>(null)
-        private set
-
-    fun setFilter(status: TicketStatus?) {
-        filter = status
-    }
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -50,13 +45,13 @@ fun SupportQueueScreen(viewModel: SupportQueueViewModel, onBack: () -> Unit, onO
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(
                         selected = filter == null,
-                        onClick = { viewModel.setFilter(null) },
+                        onClick = { viewModel.filter = null },
                         label = { Text("All (${tickets.size})") }
                     )
                     TicketStatus.entries.forEach { status ->
                         FilterChip(
                             selected = filter == status,
-                            onClick = { viewModel.setFilter(status) },
+                            onClick = { viewModel.filter = status },
                             label = { Text("${status.label()} (${tickets.count { it.status == status }})") }
                         )
                     }
