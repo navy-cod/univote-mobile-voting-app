@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.univote.evoting.core.util.DateFormats
-import com.univote.evoting.data.local.TicketRow
+import com.univote.evoting.data.local.dao.TicketRow
 import com.univote.evoting.data.repository.SupportRepository
 import com.univote.evoting.domain.label
 import com.univote.evoting.ui.admin.AdminScaffold
@@ -27,7 +27,12 @@ class SupportMineViewModel(repo: SupportRepository) : ViewModel() {
 }
 
 @Composable
-fun SupportMineScreen(viewModel: SupportMineViewModel, onBack: () -> Unit, onNew: () -> Unit) {
+fun SupportMineScreen(
+    viewModel: SupportMineViewModel,
+    onBack: () -> Unit,
+    onNew: () -> Unit,
+    onFeedback: () -> Unit
+) {
     val tickets by viewModel.tickets.collectAsStateWithLifecycle()
 
     AdminScaffold(
@@ -35,6 +40,7 @@ fun SupportMineScreen(viewModel: SupportMineViewModel, onBack: () -> Unit, onNew
         onBack = onBack,
         message = null,
         onMessageShown = {},
+        actions = { TextButton(onClick = onFeedback) { Text("Feedback") } },
         floatingActionButton = { ExtendedFloatingActionButton(onClick = onNew) { Text("New report") } }
     ) { padding ->
         LazyColumn(

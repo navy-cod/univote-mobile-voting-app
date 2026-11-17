@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.map
 /**
  * Turns new unread notification rows for the signed-in user into Android notifications.
  * The last delivered id is remembered per user, so nothing is shown twice.
- * (Reaching a user whose app is closed would need a backend and push messaging.)
  */
 class NotificationCenter(
     context: Context,

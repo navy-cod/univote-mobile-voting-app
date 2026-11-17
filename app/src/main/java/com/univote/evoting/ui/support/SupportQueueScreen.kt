@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.univote.evoting.core.util.DateFormats
-import com.univote.evoting.data.local.TicketRow
+import com.univote.evoting.data.local.dao.TicketRow
 import com.univote.evoting.data.local.entity.TicketStatus
 import com.univote.evoting.data.repository.SupportRepository
 import com.univote.evoting.domain.label

@@ -3,8 +3,8 @@ package com.univote.evoting.data.repository
 import android.database.sqlite.SQLiteConstraintException
 import androidx.room.withTransaction
 import com.univote.evoting.data.audit.AuditLogger
-import com.univote.evoting.data.local.TicketRow
 import com.univote.evoting.data.local.UniVoteDatabase
+import com.univote.evoting.data.local.dao.TicketRow
 import com.univote.evoting.data.local.entity.NotificationEntity
 import com.univote.evoting.data.local.entity.NotificationType
 import com.univote.evoting.data.local.entity.Role

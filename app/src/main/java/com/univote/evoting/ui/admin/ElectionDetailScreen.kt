@@ -275,7 +275,11 @@ private fun ElectionHeader(
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(e.title, style = MaterialTheme.typography.headlineSmall)
             if (e.description.isNotBlank()) Text(e.description)
-            Text("Status: ${e.status}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+            Text(
+                "Status: ${e.status}",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
             Text("Voting period: ${DateFormats.format(e.startTime)} to ${DateFormats.format(e.endTime)}")
             if (editable) {
                 OutlinedButton(onClick = onEdit, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {

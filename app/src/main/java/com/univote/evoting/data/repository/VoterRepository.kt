@@ -27,7 +27,6 @@ class VoterRepository(
         if (voterDao.findByRegNumber(reg) != null) {
             return ActionResult.Failure("A voter with registration number $reg already exists.")
         }
-        // departmentId and year were checked non-null by problem() above.
         voterDao.insert(VoterEntity(reg, name, departmentId!!, year!!, eligible))
         audit.log(actor(), "VOTER_ADDED", "reg=$reg")
         return ActionResult.Success

@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
@@ -82,7 +83,12 @@ fun PasswordField(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = imeAction),
         keyboardActions = KeyboardActions(onDone = { onDone() }),
         trailingIcon = {
-            TextButton(onClick = { visible = !visible }) { Text(if (visible) "Hide" else "Show") }
+            TextButton(
+                onClick = { visible = !visible },
+                modifier = Modifier.semantics {
+                    contentDescription = if (visible) "Hide password" else "Show password"
+                }
+            ) { Text(if (visible) "Hide" else "Show") }
         }
     )
 }

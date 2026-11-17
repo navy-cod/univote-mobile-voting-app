@@ -6,10 +6,7 @@ import java.util.Base64
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
-/**
- * Salted PBKDF2 (HMAC-SHA256) password hashing. Plaintext passwords are never stored (SRS section 8, item 21).
- * Requires API 26+.
- */
+/** Salted PBKDF2 (HMAC-SHA256) password hashing. Plaintext passwords are never stored. Requires API 26+. */
 object PasswordHasher {
     private const val ALGORITHM = "PBKDF2WithHmacSHA256"
     private const val ITERATIONS = 100_000
@@ -31,8 +28,7 @@ object PasswordHasher {
         val salt = Base64.getDecoder().decode(saltBase64)
         val expected = Base64.getDecoder().decode(expectedHashBase64)
         val actual = derive(password, salt)
-        // Constant-time comparison avoids timing attacks.
-        return MessageDigest.isEqual(expected, actual)
+        return MessageDigest.isEqual(expected, actual) // constant-time comparison
     }
 
     private fun derive(password: CharArray, salt: ByteArray): ByteArray {

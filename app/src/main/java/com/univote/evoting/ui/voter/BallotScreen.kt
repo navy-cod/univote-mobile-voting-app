@@ -1,5 +1,10 @@
 package com.univote.evoting.ui.voter
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.view.WindowManager
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -7,8 +12,14 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -16,19 +27,26 @@ import androidx.compose.ui.unit.dp
 import com.univote.evoting.core.util.DateFormats
 import com.univote.evoting.data.repository.BallotPosition
 import com.univote.evoting.data.repository.VoteReceipt
+import com.univote.evoting.ui.admin.ConfirmDialog
 import com.univote.evoting.ui.auth.ErrorText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BallotScreen(viewModel: BallotViewModel, onBack: () -> Unit) {
     val state = viewModel.state
+    var confirmLeave by remember { mutableStateOf(false) }
+    val hasChoices = state is BallotUiState.Voting && state.selections.isNotEmpty()
+    val leave = { if (hasChoices) confirmLeave = true else onBack() }
+
+    SecureWindow()
+    BackHandler(enabled = hasChoices) { confirmLeave = true }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Ballot") },
                 navigationIcon = {
-                    TextButton(onClick = onBack) {
+                    TextButton(onClick = leave) {
                         Text(if (state is BallotUiState.Voting) "Cancel" else "Back")
                     }
                 }
@@ -50,6 +68,32 @@ fun BallotScreen(viewModel: BallotViewModel, onBack: () -> Unit) {
             }
         }
     }
+
+    if (confirmLeave) {
+        ConfirmDialog(
+            title = "Leave the ballot?",
+            text = "Your choices have not been submitted and will be discarded.",
+            confirmLabel = "Leave",
+            onConfirm = { confirmLeave = false; onBack() },
+            onDismiss = { confirmLeave = false }
+        )
+    }
+}
+
+/** Blocks screenshots and the recent-apps preview while a ballot is on screen. */
+@Composable
+private fun SecureWindow() {
+    val activity = LocalContext.current.findActivity()
+    DisposableEffect(activity) {
+        activity?.window?.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose { activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
+    }
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 @Composable

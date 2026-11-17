@@ -34,6 +34,8 @@ import com.univote.evoting.ui.auth.RecoverPasswordScreen
 import com.univote.evoting.ui.auth.RecoverPasswordViewModel
 import com.univote.evoting.ui.auth.RegisterScreen
 import com.univote.evoting.ui.auth.RegisterViewModel
+import com.univote.evoting.ui.feedback.FeedbackScreen
+import com.univote.evoting.ui.feedback.FeedbackViewModel
 import com.univote.evoting.ui.insights.AdminInsightsScreen
 import com.univote.evoting.ui.insights.InsightsViewModel
 import com.univote.evoting.ui.insights.ObserverHomeScreen
@@ -58,7 +60,6 @@ import com.univote.evoting.ui.voter.BallotScreen
 import com.univote.evoting.ui.voter.BallotViewModel
 import com.univote.evoting.ui.voter.VoterHomeScreen
 import com.univote.evoting.ui.voter.VoterHomeViewModel
-import kotlinx.coroutines.delay
 
 @Composable
 fun AppNavHost(
@@ -68,24 +69,15 @@ fun AppNavHost(
 ) {
     val sessionUser by container.sessionManager.currentUser.collectAsStateWithLifecycle()
 
-    // Ask for the notification permission once a user has signed in.
     LaunchedEffect(sessionUser != null) { if (sessionUser != null) onSignedIn() }
 
-    // Sign-out or an expired session sends the user back to Login from any screen.
+    // Sign-out or an expired session sends the user back to Login from anywhere.
     LaunchedEffect(sessionUser) {
         val route = navController.currentDestination?.route
         val isPublic = route == null ||
                 route in setOf(Routes.SPLASH, Routes.LOGIN, Routes.REGISTER, Routes.RECOVER)
         if (sessionUser == null && !isPublic) {
             navController.navigate(Routes.LOGIN) { popUpTo(navController.graph.id) { inclusive = true } }
-        }
-    }
-
-    // Idle sessions expire even if the user never touches the screen again.
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(30_000)
-            container.sessionManager.validate()
         }
     }
 
@@ -127,14 +119,14 @@ fun AppNavHost(
             val vm: RegisterViewModel = viewModel(
                 factory = viewModelFactory { initializer { RegisterViewModel(container.authRepository) } }
             )
-            RegisterScreen(viewModel = vm, onBack = { navController.popBackStack() })
+            RegisterScreen(vm, onBack = { navController.popBackStack() })
         }
 
         composable(Routes.RECOVER) {
             val vm: RecoverPasswordViewModel = viewModel(
                 factory = viewModelFactory { initializer { RecoverPasswordViewModel(container.authRepository) } }
             )
-            RecoverPasswordScreen(viewModel = vm, onBack = { navController.popBackStack() })
+            RecoverPasswordScreen(vm, onBack = { navController.popBackStack() })
         }
 
         composable(Routes.HOME) {
@@ -155,7 +147,9 @@ fun AppNavHost(
                     Role.VOTER -> {
                         val vm: VoterHomeViewModel = viewModel(
                             factory = viewModelFactory {
-                                initializer { VoterHomeViewModel(container.votingRepository, container.notificationRepository) }
+                                initializer {
+                                    VoterHomeViewModel(container.votingRepository, container.notificationRepository)
+                                }
                             }
                         )
                         VoterHomeScreen(
@@ -172,7 +166,9 @@ fun AppNavHost(
                     Role.OBSERVER -> {
                         val vm: InsightsViewModel = viewModel(
                             factory = viewModelFactory {
-                                initializer { InsightsViewModel(container.electionRepository, container.notificationRepository) }
+                                initializer {
+                                    InsightsViewModel(container.electionRepository, container.notificationRepository)
+                                }
                             }
                         )
                         ObserverHomeScreen(
@@ -188,7 +184,9 @@ fun AppNavHost(
                     }
                     Role.SUPPORT_OFFICER, Role.SYSTEM_ADMIN -> {
                         val vm: UnreadViewModel = viewModel(
-                            factory = viewModelFactory { initializer { UnreadViewModel(container.notificationRepository) } }
+                            factory = viewModelFactory {
+                                initializer { UnreadViewModel(container.notificationRepository) }
+                            }
                         )
                         StaffHomeScreen(
                             user = user,
@@ -274,7 +272,9 @@ fun AppNavHost(
             if (isAdmin) {
                 val vm: InsightsViewModel = viewModel(
                     factory = viewModelFactory {
-                        initializer { InsightsViewModel(container.electionRepository, container.notificationRepository) }
+                        initializer {
+                            InsightsViewModel(container.electionRepository, container.notificationRepository)
+                        }
                     }
                 )
                 AdminInsightsScreen(
@@ -295,7 +295,9 @@ fun AppNavHost(
             val electionId = entry.arguments?.getLong("electionId") ?: return@composable
             if (sessionUser?.role == Role.VOTER) {
                 val vm: BallotViewModel = viewModel(
-                    factory = viewModelFactory { initializer { BallotViewModel(electionId, container.votingRepository) } }
+                    factory = viewModelFactory {
+                        initializer { BallotViewModel(electionId, container.votingRepository) }
+                    }
                 )
                 BallotScreen(vm, onBack = { navController.popBackStack() })
             }
@@ -340,7 +342,7 @@ fun AppNavHost(
             }
         }
 
-        // ---- Audit records, support and fraud reports ----
+        // ---- Audit, support, feedback ----
 
         composable(Routes.AUDIT) {
             if (allowed(auditRoles)) {
@@ -359,7 +361,8 @@ fun AppNavHost(
                 SupportMineScreen(
                     viewModel = vm,
                     onBack = { navController.popBackStack() },
-                    onNew = { navController.navigate(Routes.SUPPORT_NEW) }
+                    onNew = { navController.navigate(Routes.SUPPORT_NEW) },
+                    onFeedback = { navController.navigate(Routes.FEEDBACK) }
                 )
             }
         }
@@ -398,6 +401,15 @@ fun AppNavHost(
                     }
                 )
                 TicketDetailScreen(vm, onBack = { navController.popBackStack() })
+            }
+        }
+
+        composable(Routes.FEEDBACK) {
+            if (sessionUser != null) {
+                val vm: FeedbackViewModel = viewModel(
+                    factory = viewModelFactory { initializer { FeedbackViewModel(container.feedbackRepository) } }
+                )
+                FeedbackScreen(vm, onBack = { navController.popBackStack() })
             }
         }
     }

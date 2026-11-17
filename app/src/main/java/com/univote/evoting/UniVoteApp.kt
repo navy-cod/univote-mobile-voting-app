@@ -1,7 +1,6 @@
 package com.univote.evoting
 
 import android.app.Application
-import com.univote.evoting.core.notifications.NotificationChannels
 import com.univote.evoting.di.AppContainer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +16,6 @@ class UniVoteApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        NotificationChannels.register(this)
         container = AppContainer(this)
         appScope.launch { container.initialize() }
         appScope.launch { container.notificationCenter.run() }

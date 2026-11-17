@@ -96,7 +96,7 @@ class VotingRepository(
         val outcome = try {
             db.withTransaction { castInTransaction(user, reg, electionId, selections) }
         } catch (e: SQLiteConstraintException) {
-            // The unique index caught a duplicate that slipped past the check above.
+            // The unique index caught a duplicate that slipped past the check.
             CastVoteResult.AlreadyVoted
         }
         if (outcome is CastVoteResult.Success) {
